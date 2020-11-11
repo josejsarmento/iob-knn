@@ -33,6 +33,8 @@ module iob_knn
    knn_core knn0
      (
       .KNN_ENABLE(KNN_ENABLE),
+      .KNN_SAMPLE(KNN_SAMPLE),
+      .KNN_VALUE(KNN_VALUE),
       .clk(clk),
       .rst(rst_int)
       );
