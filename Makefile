@@ -12,7 +12,7 @@ else
 endif
 
 sim-waves:
-	gtkwave $(SIM_DIR)/timer.vcd &
+	gtkwave $(SIM_DIR)/knn.vcd &
 
 sim-clean:
 ifeq ($(SIM_SERVER), localhost)
