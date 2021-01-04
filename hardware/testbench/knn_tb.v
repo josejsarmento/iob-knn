@@ -46,7 +46,7 @@ module knn_tb;
    //instantiate knn core
    knn_core knn0
      (
-      .KNN_ENABLE(KNN_ENABLE),
+      .knn_enable(KNN_ENABLE),
       .KNN_SAMPLE(KNN_SAMPLE),
       .KNN_VALUE(KNN_VALUE),
       .clk(clk),
