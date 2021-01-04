@@ -41,34 +41,14 @@ struct neighbor {
   unsigned int dist; //distance to test point
 } neighbor[K];
 
-//
-//Functions
-//
-
-//square distance between 2 points a and b
-unsigned int sq_dist( struct datum a, struct datum b) {
-  short X = a.x-b.x;
-  unsigned int X2=X*X;
-  short Y = a.y-b.y;
-  unsigned int Y2=Y*Y;
-  return (X2 + Y2);
-}
-
-//insert element in ordered array of neighbours
-void insert (struct neighbor element, unsigned int position) {
-  for (int j=K-1; j>position; j--)
-    neighbor[j] = neighbor[j-1];
-
-  neighbor[position] = element;
-
-}
-
 
 ///////////////////////////////////////////////////////////////////
 int main() {
 
   unsigned long long elapsed;
   unsigned int elapsedu;
+
+  int k, j, i, m;
 
   //init uart and timer
   uart_init(UART_BASE, FREQ/BAUD);
@@ -80,7 +60,7 @@ int main() {
   //elapsed  = timer_get_count();
   //elapsedu = timer_time_us();
 
-
+	knn_init(KNN_BASE);
   //int vote accumulator
   int votes_acc[C] = {0};
 
@@ -88,7 +68,7 @@ int main() {
   random_init(S);
 
   //init dataset
-  for (int i=0; i<N; i++) {
+  for (i=0; i<N; i++) {
 
     //init coordinates
     data[i].x = (short) cmwc_rand();
@@ -101,21 +81,24 @@ int main() {
 #ifdef DEBUG
   uart_printf("\n\n\nDATASET\n");
   uart_printf("Idx \tX \tY \tLabel\n");
-  for (int i=0; i<N; i++)
+  for (i=0; i<N; i++)
     uart_printf("%d \t%d \t%d \t%d\n", i, data[i].x,  data[i].y, data[i].label);
 #endif
-  
+
   //init test points
-  for (int k=0; k<M; k++) {
+  for (k=0; k<M; k++) {
     x[k].x  = (short) cmwc_rand();
     x[k].y  = (short) cmwc_rand();
     //x[k].label will be calculated by the algorithm
+	knn_enable();
+    knn_set_M_x_y(x[k].x, x[k].y, (short) k);
+    knn_disable();
   }
 
 #ifdef DEBUG
   uart_printf("\n\nTEST POINTS\n");
   uart_printf("Idx \tX \tY\n");
-  for (int k=0; k<M; k++)
+  for (k=0; k<M; k++)
     uart_printf("%d \t%d \t%d\n", k, x[k].x, x[k].y);
 #endif
   
@@ -125,67 +108,57 @@ int main() {
 
   //start knn here
   
-  for (int k=0; k<M; k++) { //for all test points
+  for (i=0; i<N; i++) { //for all data set
   //compute distances to dataset points
 
 #ifdef DEBUG
-    uart_printf("\n\nProcessing x[%d]:\n", k);
+    uart_printf("\n\nProcessing data[%d]:\n", i);
 #endif
 
-    //init all k neighbors infinite distance
-    for (int j=0; j<K; j++)
-      neighbor[j].dist = INFINITE;
-
-#ifdef DEBUG
-    uart_printf("Datum \tX \tY \tLabel \tDistance\n");
-#endif
-    for (int i=0; i<N; i++) { //for all dataset points
       //compute distance to x[k]
-      unsigned int d = sq_dist(x[k], data[i]);
-
-      //insert in ordered list
-      for (int j=0; j<K; j++)
-        if ( d < neighbor[j].dist ) {
-          insert( (struct neighbor){i,d}, j);
-          break;
-        }
-
-#ifdef DEBUG
-      //dataset
-      uart_printf("%d \t%d \t%d \t%d \t%d\n", i, data[i].x, data[i].y, data[i].label, d);
-#endif
+      knn_calculate_N_distance(data[i].x, data[i].y, data[i].label);
 
     }
-
     
     //classify test point
-
+  for (m=0; m<M; m++) { //for all data set
     //clear all votes
     int votes[C] = {0};
     int best_votation = 0;
     int best_voted = 0;
 
-    //make neighbours vote
-    for (int j=0; j<K; j++) { //for all neighbors
-      if ( (++votes[data[neighbor[j].idx].label]) > best_votation ) {
-        best_voted = data[neighbor[j].idx].label;
-        best_votation = votes[best_voted];
+        #ifdef DEBUG
+          uart_printf("M\t%d\n", m+1 );
+        #endif
+      //make neighbours vote
+      for (k=0; k<K; k++) { //for all neighbors
+		  
+        #ifdef DEBUG
+          uart_printf("K\t%d\n", k );
+        #endif
+        int vote = knn_get_class(k*M+m);
+        #ifdef DEBUG
+          uart_printf("vote\t%d\n", vote );
+        #endif
+        if ( (++votes[vote]) > best_votation ) {
+          best_voted = vote;
+          best_votation = votes[best_voted];
+        }
       }
-    }
 
-    x[k].label = best_voted;
+    x[m].label = best_voted;
 
     votes_acc[best_voted]++;
     
 #ifdef DEBUG
-    uart_printf("\n\nNEIGHBORS of x[%d]=(%d, %d):\n", k, x[k].x, x[k].y);
+    uart_printf("\n\nNEIGHBORS of x[%d]=(%d, %d):\n", m, x[m].x, x[m].y);
     uart_printf("K \tIdx \tX \tY \tDist \t\tLabel\n");
     for (int j=0; j<K; j++)
       uart_printf("%d \t%d \t%d \t%d \t%d \t%d\n", j+1, neighbor[j].idx, data[neighbor[j].idx].x,  data[neighbor[j].idx].y, neighbor[j].dist,  data[neighbor[j].idx].label);
     
-    uart_printf("\n\nCLASSIFICATION of x[%d]:\n", k);
+    uart_printf("\n\nCLASSIFICATION of x[%d]:\n", m);
     uart_printf("X \tY \tLabel\n");
-    uart_printf("%d \t%d \t%d\n\n\n", x[k].x, x[k].y, x[k].label);
+    uart_printf("%d \t%d \t%d\n\n\n", x[m].x, x[m].y, x[m].label);
 
 #endif
 
