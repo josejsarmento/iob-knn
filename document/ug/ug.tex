@@ -9,8 +9,8 @@
 \usepackage{array}
 \newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
 
-\title{64-bit Timer}
-\category{IOB-TIMER User Guide, \input{version.txt}, Build \input{shortHash.txt}}
+\title{KNN Accelerator}
+\category{IOB-KNN User Guide, \input{KNN_version.txt}, Build \input{shortHash.txt}}
 %\confidential{}
 
 %\getenv[\TEX]{TEX_DIR}
@@ -45,8 +45,8 @@
 \input{./bdd}
 \clearpage
 
-%\section{\textcolor[rgb]{0,0,0}{Synthesis Parameters}}
-%\input{./sp}
+\section{\textcolor[rgb]{0,0,0}{Synthesis Parameters}}
+\input{./sp}
 
 \section{Interface Signals}
 \input{is}
@@ -56,6 +56,12 @@
 
 \section{\textcolor[rgb]{0,0,0}{FPGA Results}}
 \input{ir}
+
+\section{Driver Guide}
+\input{dg}	
+	
+\section{Speed Up}	
+\input{su}
 
 %\bibliographystyle{unsrt}
 %\bibliography{ug}
