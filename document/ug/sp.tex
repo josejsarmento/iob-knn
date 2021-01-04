@@ -1,0 +1,7 @@
+This section explains the synthesis parameters that can be changed in
+order to generate a bigger or smaller module to better fit the user needs.
+These parameters can be changed in the file iob\_knn.vh.
+
+\noindent \textbf{N\_Neighbour} is the parameter that defines the number of neighbour points for each of the KNN Cores. Inside the each core, the neighbours are going to be ordered by their distance to the respective test point.
+
+\noindent \textbf{NT\_points} defines the number of KNN Cores available in the hardware and therefore the number of test points that can be loaded in the accelerator.
