@@ -2,6 +2,9 @@ include $(KNN_DIR)/core.mk
 
 #define
 DEFINE+=$(defmacro) DATA_W=32
+DEFINE+=$(defmacro) LABELS=8
+DEFINE+=$(defmacro) K_NEIGHBOURS=4
+DEFINE+=$(defmacro) M_POINTS=4
 
 #include
 INCLUDE+=$(incdir) $(KNN_HW_INC_DIR)
